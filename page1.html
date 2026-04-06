@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Battle Game</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+#intro-video {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 20;
+}
+
+#start-screen {
+    display: none;
+}
+
+  #kiss-btn {
+    font-family: 'League Spartan', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+
+    padding: 12px 28px;
+    border-radius: 30px;
+    border: 2px solid white;
+    background: transparent;
+
+    cursor: pointer;
+
+    transform: translateY(-60px); /* 🔥 BEST WAY */
+    transition: all 0.2s ease;
+}
+
+#kiss-btn:active {
+    transform: scale(0.95) translateY(-60px);
+}
+
+  #progress-text {
+    font-family: 'League Spartan', sans-serif;
+    color: white;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255,255,255,0.4);
+
+    transform: translateY(-80px); /* 🔥 MOVE IT UP */
+}
+
+    #confirm-btn {
+    position: absolute;
+    bottom: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140px;
+    cursor: pointer;
+}
+
+   #sad-game {
+    display: none;
+    position: fixed; /* 🔥 THIS IS KEY */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* center everything */
+
+    text-align: center;
+    z-index: 5;
+}
+
+#heart-container {
+    margin: 0;
+}
+
+#heart-img {
+    width: 320px; /* bigger again */
+    margin-bottom: 10px;
+    animation: pulse 1.2s infinite, floatHeart 3s ease-in-out infinite;
+}
+
+ #letter-content {
+    position: absolute;
+    top: 10%;
+    left: 12%;
+    right: 12%;
+    bottom: 14%;
+    overflow-y: auto;  /* scroll if text too long */
+    color: gold;
+    font-size: 16px;
+    line-height: 1.6;
+    text-shadow: 0 0 2px black, 0 0 4px black;
+    padding-bottom: 40px; /* make space for confirm button */
+}
+
+#letter-text {
+    white-space: pre-line;
+}
+
+    #letter-screen {
+    position: fixed;
+    top: 100%; /* start off screen */
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #1e3a8a, #0f172a); /* 🔥 nicer blue */
+    transition: top 0.8s ease;
+    z-index: 10;
+}
+
+#letter-screen.show {
+    top: 0;
+}
+
+
+#letter-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.2); /* 🔥 MAKE LETTER BIGGER */
+    
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+}
+
+#confirm-btn {
+    position: static; /* remove absolute */
+    margin-top: 20px; /* space below letter text */
+    width: 220px;
+    cursor: pointer;
+    opacity: 0;        
+    pointer-events: none;
+    transition: opacity 0.5s ease, transform 0.2s ease;
+}
+
+#confirm-btn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+@keyframes floatHeart {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0px); }
+}
+
+    #heart-container {
+    font-size: 80px;
+    transition: transform 0.2s;
+}
+
+
+#kiss-btn:hover {
+    background: gold;
+    color: black;
+}
+    h1 {
+    color: gold;
+    text-shadow: 0 0 10px #FFD700, 0 0 20px black;
+}
+
+.opponent-name {
+    color: gold;
+    text-shadow: 0 0 5px #FFD700, 0 0 10px black;
+}
+
+.opponent-desc {
+    color: white;
+    text-shadow: 0 0 3px black, 0 0 6px black;
+}
+#opponent-screen {
+    padding-bottom: 100px; /* so last row not cut off */
+}
+#opponent-screen {
+    position: relative;
+}
+#opponent-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4); /* dark overlay */
+    z-index: 0;
+}
+#opponent-screen * {
+    position: relative;
+    z-index: 1;
+}
+.img-wrapper {
+    border-radius: 15px;
+    overflow: hidden;
+    padding: 5px; /* THIS prevents glow from touching edge */
+}
+
+    body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: "League Spartan", sans-serif;
+    background: url("dazhu-bg.png") no-repeat center center fixed;
+    background-size: cover;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+    /* Background */
+    #bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: url("dazhu-bg.png") no-repeat center center;
+        background-size: cover;
+        opacity: 0;
+        animation: fadeIn 2s forwards;
+        pointer-events: none;
+           z-index: 0;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    /* Particle canvas */
+    #particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+           z-index: 0;
+    }
+
+    /* Start Game Button */
+  #start-box {
+    position: absolute;      /* absolute so top/left are relative to viewport */
+    z-index: 10;             /* above bg and particles */
+    top: 65%;                /* 65% from top of viewport */
+    left: 50%;               /* centered horizontally */
+    transform: translate(-50%, -50%); /* perfectly center */
+    width: 250px;
+    height: 80px;
+    background: rgba(0,0,0,0.6);
+    border: 2px solid gold;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    cursor: pointer;
+    opacity: 0;
+    animation: popIn 1s 2s forwards, float 3s infinite ease-in-out;
+    color: gold;
+    text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700;
+    letter-spacing: 2px;
+}
+    @keyframes float {
+        0%   { transform: translate(-50%, -50%) translateY(0px); }
+        50%  { transform: translate(-50%, -50%) translateY(-10px); }
+        100% { transform: translate(-50%, -50%) translateY(0px); }
+    }
+
+    @keyframes popIn {
+        0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+        100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    #start-box:hover {
+        transform: translate(-50%, -50%) scale(1.05);
+        background: rgba(0,0,0,0.8);
+        transition: 0.3s;
+        text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
+    }
+
+    /* Opponent Screen */
+  #opponent-screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding-top: 20px; /* WAS 50px → now tighter */
+    padding-bottom: 40px;
+    background: url('dazhu-bg.png') no-repeat center center;
+    background-size: cover;
+    text-align: center;
+}
+
+    #opponent-screen h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px #FFD700;
+        color: gold;
+    }
+
+    
+   .opponents {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px; /* smaller gap */
+    padding: 10px 30px;
+}
+
+    .opponent {
+        width: 150px;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+   .opponent img {
+    width: 100%;
+    height: 160px; /* was bigger → now shorter */
+    object-fit: cover;
+    object-position: center;
+    border-radius: 15px;
+    border: 2px solid gold;
+    box-shadow: 0 0 12px #FFD700;
+}
+
+.opponent img {
+    box-shadow: 0 0 12px #FFD700; /* slightly smaller */
+}
+
+.opponent {
+    width: 150px;
+    margin: 10px; /* ADD THIS */
+    cursor: pointer;
+    transition: transform 0.3s;
+    overflow: visible;
+}
+
+.opponent img {
+    transition: transform 0.4s ease;
+}
+
+.opponent:hover img {
+    transform: scale(1.15); /* zoom in on hover */
+}
+
+   .opponent:hover img {
+    transform: scale(1.05); /* less intense zoom */
+}
+
+   .opponent-name {
+    margin-top: 6px;
+    font-size: 16px;
+}
+
+.opponent-desc {
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+    .opponent img[src="dazhu-bg-natalia.png"] {
+    object-position: 80% center; /* move focus to the left */
+}
+
+.opponent img[src="dazhu-bg-fanny.png"] {
+    object-position: 15% center; /* move focus to the right */
+}
+</style>
+</head>
+<body>
+    
+
+   <audio id="mitski-audio" loop>
+  <source src="mitski-audio.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
+    <audio id="click-sfx" preload="auto">
+    <source src="click.mp3" type="audio/mpeg">
+</audio>
+
+    <audio id="kiss-sfx" src="kiss-sfx.m4a"></audio>
+
+    <canvas id="heart-particles" style="display:none;"></canvas>
+
+    <div id="sad-game" style="display:none; text-align:center; padding-top:50px;">
+    <h1 style="color: gold;">KISS ME!</h1>
+    
+    <div id="heart-container">
+    <img id="heart-img" src="heart.png">
+</div>
+
+    <p id="progress-text">0%</p>
+
+    <button id="kiss-btn">TAP</button>
+</div>
+
+<div id="letter-screen">
+    <img id="letter-bg" src="letter.png">
+
+    <div id="letter-content">
+        <p id="letter-text"></p>
+        <div style="text-align:center;">
+            <img id="confirm-btn" src="confirm.png">
+        </div>
+    </div>
+</div>
+
+<video id="intro-video" playsinline>
+    <source src="mlbb-cover.MP4" type="video/MP4">
+</video>
+
+<!-- Start Screen -->
+<div id="start-screen">
+    <div id="bg"></div>
+    <canvas id="particles"></canvas>
+    <div id="start-box">START GAME</div>
+</div>
+
+<!-- Opponent Selection Screen -->
+<div id="opponent-screen">
+    <h1>Choose Your Opponent</h1>
+    <div class="opponents" id="opponents-container"></div>
+</div>
+
+<script>
+
+  const mitskiAudio = document.getElementById("mitski-audio");
+
+// This function "unlocks" the audio for mobile
+function initMobileAudio() {
+    // Set volume and loop
+    mitskiAudio.volume = 0.5;
+    mitskiAudio.loop = true;
+    
+    // Play the audio
+    mitskiAudio.play().then(() => {
+        console.log("Audio started successfully");
+    }).catch((err) => {
+        console.log("Mobile audio block: ", err);
+    });
+
+    // Remove the listener so it doesn't keep firing every time you tap
+    document.removeEventListener("touchstart", initMobileAudio);
+    document.removeEventListener("click", initMobileAudio);
+}
+
+// Listen for both 'click' (desktop) and 'touchstart' (mobile)
+document.addEventListener("click", initMobileAudio);
+document.addEventListener("touchstart", initMobileAudio);;
+    
+
+    function playClick() {
+    const click = document.getElementById("click-sfx");
+    click.currentTime = 0;
+    click.play().catch(() => {});
+}
+
+    document.body.addEventListener("click", () => {
+    const kiss = document.getElementById("kiss-sfx");
+    kiss.play().then(() => {
+        kiss.pause();
+        kiss.currentTime = 0;
+    }).catch(() => {});
+}, { once: true });
+
+  const introVideo = document.getElementById("intro-video");
+
+// make video start WITH SOUND on first tap anywhere
+document.addEventListener("click", () => {
+    introVideo.currentTime = 0;
+    introVideo.muted = false;
+    introVideo.volume = 1;
+    introVideo.play().catch(() => {});
+}, { once: true });
+
+introVideo.onended = () => {
+    introVideo.style.display = "none";
+    document.getElementById("start-screen").style.display = "block";
+};
+
+    function type() {
+    if (i < message.length) {
+        textElement.innerHTML += message[i] === "\n" ? "<br>" : message[i];
+        i++;
+        setTimeout(type, 15);
+    } else {
+        confirmBtn.classList.add("show"); // ✅ this triggers appearance
+    }
+}
+
+    document.getElementById("confirm-btn").classList.remove("show");
+
+    function startSadGame() {
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("opponent-screen").style.display = "none";
+   document.body.style.overflow = "hidden";
+   document.getElementById("start-screen").style.display = "none";
+    
+    const game = document.getElementById("sad-game");
+    game.style.display = "flex";
+
+    const canvas = document.getElementById("heart-particles");
+    canvas.style.display = "block";
+
+    animateHearts();
+}
+
+    let taps = 0;
+    const maxTaps = 46;
+
+    const heart = document.getElementById("heart-container");
+    const text = document.getElementById("progress-text");
+    const btn = document.getElementById("kiss-btn");
+
+   const kissSound = document.getElementById("kiss-sfx");
+
+btn.onclick = () => {
+    taps++;
+
+    // 💋 play sound
+    kissSound.currentTime = 0; // restart sound quickly
+    kissSound.play();
+
+    let percent = Math.floor((taps / maxTaps) * 100);
+    text.innerText = percent + "%";
+
+    heart.style.transform = `scale(${1 + taps * 0.015})`;
+
+    if (taps >= maxTaps) {
+        showLetter(selectedOpponent);
+    }
+};
+
+function showLetter(opponentName) {
+    document.getElementById("sad-game").style.display = "none";
+    document.getElementById("heart-particles").style.display = "none";
+
+    const screen = document.getElementById("letter-screen");
+    screen.classList.add("show");
+
+    const textElement = document.getElementById("letter-text");
+    const confirmBtn = document.getElementById("confirm-btn");
+
+    confirmBtn.classList.remove("show");
+
+    // Set message based on selected opponent
+    let message = "";
+
+    if (opponentName === "char-ix") {
+        message = `halo baby hehe i'm so happy you're happy :) this is always my goal which is to make you happy. hehe i hope you have a wonderful day ahead okay bb keep this energy and mood up and everything will go your way, bb you're a wonderful person so you deserve to be happy and i'm glad you are. i really wish i could be there to be happy with you but i better be the one making you happy right now...  if not fine lor... i guess other things can make u happy oso lor...
+
+okay jaykay :p but i really wish i could be there right now to share this happiness together and feel it together. but for now, i’ll be the one cheering you on and making you smile in my own way, hehe. even if i can’t be there physically, i hope my words can give you a little boost and remind you that you're not alone :)
+
+so please enjoy every little thing that makes you happy today okie? whatever it is and remember, no matter what, i’ll always be here wanting the best for you and supporting you. so keep shining, bb you’ve got this, and i’m so proud of you :) i love you
+
+-your princess xoxo`;
+    } else {
+        message = `halooo bb i know you're feeling really sad right now and i wish i could be there for you to hear you out ... 
+        -your princess xoxo`;
+    }
+
+    let i = 0;
+    textElement.innerHTML = "";
+
+    function type() {
+        if (i < message.length) {
+            textElement.innerHTML += message[i] === "\n" ? "<br>" : message[i];
+            i++;
+            setTimeout(type, 15);
+        } else {
+            confirmBtn.classList.add("show");
+        }
+    }
+
+    type();
+}
+
+function explodeHeart() {
+    const heartImg = document.getElementById("heart-img");
+    const container = document.getElementById("heart-container");
+
+    heartImg.style.display = "none"; // hide image
+    container.innerHTML += "💥"; // explosion
+
+    setTimeout(() => {
+        showLetter();
+    }, 1000);
+}
+
+function showLetter(opponentName) {
+    // Hide game screen
+    document.getElementById("sad-game").style.display = "none";
+    document.getElementById("heart-particles").style.display = "none";
+
+    const screen = document.getElementById("letter-screen");
+    screen.classList.add("show");
+
+    const textElement = document.getElementById("letter-text");
+    const confirmBtn = document.getElementById("confirm-btn");
+    confirmBtn.classList.remove("show");
+
+    // Set message based on selected opponent
+    let message = "";
+
+    if (opponentName === "char-ix") {
+        message = message = `halo baby hehe i’m so happy you’re happy :) this is always my goal which is to make you happy. hehe i hope you have a wonderful day ahead okay bb keep this energy and mood up and everything will go your way, bb you’re a wonderful person so you deserve to be happy and i’m glad you are. i really wish i could be there to be happy with you but i better be the one making you happy right now... if not fine lor... i guess other things can make u happy oso lor...
+
+okay jaykay :p but i really wish i could be there right now to share this happiness together and feel it together. but for now, i’ll be the one cheering you on and making you smile in my own way, hehe. even if i can’t be there physically, i hope my words can give you a little boost and remind you that you’re not alone :)
+
+so please enjoy every little thing that makes you happy today okie? whatever it is and remember, no matter what, i’ll always be here wanting the best for you and supporting you. so keep shining, bb you’ve got this, and i’m so proud of you :) i love you
+
+-your princess xoxo`;
+    } else if (opponentName === "char-anny") {
+    message = `halo bb i'm sorry i cant be there to sayang sayang you and hug hug you :( you rich thing bb :( i know you're tired and probably just wanna rot somewhere and rest, but i hope you can still feel a little bit of my care and love even from far away hehe please take it easy bb, don't push yourself too hard okay?… let your body and mind rest a bit. maybe eat some nice snacks (i hope you have if not tell me, i'll get you some when can okay?) or just lie down and close your eyes for a while (hopefully you can do this also). i wish i could be there to make you feel all comfy and loved, but for now i’ll just send you all my hugs and kisses through this message hehe
+
+remember bb, even when you’re tired and stressed, you’re still amazing and i’m so proud of you. so take a moment to relax, and let yourself recharge… i’ll be here thinking of you and waiting to spoil you once you feel better!! i love you
+
+-your princess xoxo`;
+
+} else if (opponentName === "guine-maine") {
+    message = `halo bb i'm not sure why you feel like giving up baby but please don't give up. you're the best man i know in the whole wide world and i hope you don't stay down like this. i'm forever here to support you, to cheer you on, and i hope i can motivate you to work harder and not give up as well.
+
+even when things feel heavy or unfair, remember how strong and capable you are… you’ve overcome so much already and i know you can get through this too. it’s okay to feel unmotivated, but please don’t let it stop you from shining like you always do :)
+
+please believe in yourself as much as i believe in you so much… you’re my strong handsome hero, bb, and i love you to the moon and back. don’t ever forget even when it’s hard, i’m right here by your side, thinking of you, supporting you, and cheering you on, always.
+
+i love you 
+
+- your princess xoxo`;
+
+} else if (opponentName === "haya-maine") {
+    message = `halo bb don't stay awake for too long okie you need your rest bb you shouldn't stay up too long but if you need someone to talk to just call me and we can talk :) i know you overthink sometimes maybe that's what keeping you awake and that’s okay bb… just know i’m here with you even from far away. we can talk about anything, or i can just be your quiet company so you don’t feel alone. 
+    
+    but if you wanna be alone, maybe try closing your eyes, or watch some tiktoks or maybe play ml but if all else fails, just imagine me beside you, sayang sayang-ing you making you feel all comfy and safe hehe so don't stay up for too long bb but just remember that i'm here okie just use me anytime you want bb. 
+    
+    so don’t stress too much, just relax, think of me, and let yourself drift off to sleep but must dream of me okay :) i love you bb 
+    
+    -your princess xoxo`;
+
+
+    } else if (opponentName === "char-lot") {
+    message = `halo bb why you even lonely just call me or text me?? but fine maybe i'm busy right now… but seriously bb, i know sometimes you just feel a little lonely and that’s okay. even if i can’t be there physically, i’m always thinking of you and sending you all my love and big fat hugs through this message :) if you wanna talk, rant, or just send random messages, just do it bb i'll reply immediately when i'm free okie? so don’t feel too lonely bb, you’ve got me, even from afar. i love you and i’m always here thinking of you, cheering you on, and spoiling you in my heart :) i love you bb
+
+-your princess xoxo`;
+
+} else 
+     {
+        // default sad message for other opponents
+        message = `halooo bb i know you're feeling really sad right now and i wish i could be there for you to hear you out but sadly we are sooo far apart :( i hope you're not sad because of me:( if it is im really really sorry for hurting your feelings baby, i never ever want to be the reason you’re hurting… but if it’s not, please don’t keep everything inside okay :(
+
+if you don’t feel like talking, i’ll still be here with you quietly, just accompanying you okay? you’re not alone in this even if it feels like it bb im always here hehe.
+
+you’re my handsome handsome prince and i don’t like seeing you sad :( you’re the funniest person i know, you always make everyone laugh so easily, and i really admire that about you… so it makes me a sad that i can’t make you smile right now, but i promise i’ll keep trying just for you hehe even if it’s just a small smile okay.
+
+i really wish i could hug you right now and just sit beside you, maybe sayang sayang you and let you rest without doing anything :( i’d probably annoy you a bit too until you smile just a tiny bit hehe
+
+if something is bothering you, you can tell me anything, really, i’ll listen to everything with no judgement at all. and if you don’t feel like talking about it yet, that’s okay too, you can take your time, i’ll still be here waiting for you
+
+your feelings matter to me a lot okay, no matter how big or small you think they are. you don’t have to deal with things alone, you have me, always
+
+it’s okay to feel like this okay bb? bad days happen, but they won’t last forever. just take things slowly, one step at a time, no need to rush yourself to feel better
+
+and bb… your smile is still my favourite thing in the whole world so please bring it back slowly okay :> i’ll be right here with you through everything, no matter what I love you baby.
+
+-your princess xoxo`;
+    }
+
+    // Typewriter effect
+    let i = 0;
+    textElement.innerHTML = "";
+
+    function type() {
+        if (i < message.length) {
+            textElement.innerHTML += message[i] === "\n" ? "<br>" : message[i];
+            i++;
+            setTimeout(type, 15);
+        } else {
+            confirmBtn.classList.add("show");
+        }
+    }
+
+    type();
+}
+
+
+    // Particle effect
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+    let w = canvas.width = window.innerWidth;
+    let h = canvas.height = window.innerHeight;
+
+    const particles = [];
+    const numParticles = 50;
+
+    function random(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
+    class Particle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = random(0, w);
+            this.y = random(0, h);
+            this.size = random(2, 5);
+            this.speedY = random(0.2, 0.8);
+            this.alpha = random(0.3, 0.8);
+        }
+        update() {
+            this.y -= this.speedY;
+            if (this.y < 0) this.reset();
+        }
+        draw() {
+            ctx.fillStyle = `rgba(255, 215, 0, ${this.alpha})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    for (let i = 0; i < numParticles; i++) particles.push(new Particle());
+
+
+   function animate() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+}
+
+
+    animate();
+    window.addEventListener("resize", () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+
+    // Start button click
+  const startBox = document.getElementById("start-box");
+const startScreen = document.getElementById("start-screen"); // ✅ THIS LINE FIXES IT
+
+const opponentScreen = document.getElementById("opponent-screen");
+const opponentsContainer = document.getElementById("opponents-container");
+
+   const opponents = [
+    {
+        name: "char-alia",
+        img: "dazhu-bg-natalia.png",
+        desc: "Fight me when you're sad"
+    },
+    {
+        name: "char-ix",
+        img: "dazhu-bg-beatrix.png",
+        desc: "Fight me when you're happy"
+    },
+    {
+        name: "char-anny",
+        img: "dazhu-bg-fanny.png",
+        desc: "Fight me when you're tired"
+    },
+    {
+        name: "guine-maine",
+        img: "dazhu-bg-guinevere.png",
+        desc: "Fight me when you feel like giving up"
+    },
+    {
+        name: "haya-maine",
+        img: "dazhu-bg-hayabusa.png",
+        desc: "Fight me when you can't sleep"
+    },
+    {
+        name: "char-lot",
+        img: "dazhu-bg-lancelot.png",
+        desc: "Fight me when you're lonely"
+    }
+];
+
+startBox.addEventListener("click", () => {
+    playClick(); // 🔊 ADD THIS
+
+    startScreen.style.display = "none";
+    opponentScreen.style.display = "block";
+
+    // Stop yellow particles
+    document.getElementById("particles").style.display = "none";
+
+    // Clear container
+    opponentsContainer.innerHTML = "";
+
+    // Create opponent divs with click handlers
+    opponents.forEach(op => {
+        const div = document.createElement("div");
+        div.className = "opponent";
+
+        div.innerHTML = `
+            <div class="img-wrapper">
+                <img src="${op.img}" alt="${op.name}">
+            </div>
+            <div class="opponent-name">${op.name}</div>
+            <div class="opponent-desc">${op.desc}</div>
+        `;
+
+       div.addEventListener("click", function () {
+    playClick(); // 🔊 ADD THIS
+
+    selectedOpponent = op.name;
+    startSadGame();
+});
+        opponentsContainer.appendChild(div);
+    });
+});
+
+
+// 💗 HEART PARTICLES (only runs when visible)
+const heartCanvas = document.getElementById("heart-particles");
+const hctx = heartCanvas.getContext("2d");
+
+let hw = heartCanvas.width = window.innerWidth;
+let hh = heartCanvas.height = window.innerHeight;
+
+const kissImg = new Image();
+kissImg.src = "kiss-particles.png";
+
+let heartParticles = [];
+
+for (let i = 0; i < 30; i++) {
+    heartParticles.push({
+        x: Math.random() * hw,
+        y: Math.random() * hh,
+        size: Math.random() * 60 + 60, // 💋 MUCH BIGGER
+        speed: Math.random() * 1 + 0.5
+    });
+}
+
+function animateHearts() {
+    if (heartCanvas.style.display === "none") return;
+
+    hctx.clearRect(0, 0, hw, hh);
+
+    heartParticles.forEach(h => {
+       hctx.drawImage(kissImg, h.x, h.y, h.size * 1.2, h.size);
+
+        h.y += h.speed;
+
+        if (h.y > hh) {
+            h.y = -20;
+            h.x = Math.random() * hw;
+        }
+    });
+
+    requestAnimationFrame(animateHearts);
+}
+
+document.addEventListener("click", function(e) {
+   if (e.target && e.target.id === "confirm-btn") {
+    playClick(); // 🔊 ADD THIS
+    document.getElementById("letter-screen").classList.remove("show");
+    document.getElementById("opponent-screen").style.display = "block";
+    document.body.style.overflow = "auto";
+
+    taps = 0; // 🔥 IMPORTANT
+
+    document.getElementById("heart-container").innerHTML =
+        '<img id="heart-img" src="heart.png">';
+    document.getElementById("progress-text").innerText = "0%";
+}
+    
+});
+
+
+    
+</script>
+
+</body>
+</html>
